@@ -2,7 +2,17 @@ fastapi
 uvicorn[standard]
 aio_pika
 redis
+aioredis
 httpx
 python-dotenv
 loguru
 tenacity
+firebase-admin
+pydantic
+pywebpush
+pytest
+pytest-asyncio
+flake8
+ruff
+asyncpg
+python-json-logger
