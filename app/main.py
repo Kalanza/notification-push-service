@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.api.health import router as health_router
 from app.services.database import init_db, db_pool
-import logging
+from app.logging_config import configure_logging, get_logger
+from app.config import settings
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+configure_logging(settings.log_level)
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
@@ -40,4 +41,7 @@ def index():
 
 
 app.include_router(health_router)
+
+from app.api.quota import router as quota_router
+app.include_router(quota_router)
 

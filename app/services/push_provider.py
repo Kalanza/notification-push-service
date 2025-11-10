@@ -4,6 +4,7 @@ from typing import Dict, List, Any, Optional
 from firebase_admin import credentials, messaging
 import firebase_admin
 from app.config import settings
+from app.services.rate_limiter import is_rate_limited
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ async def send_push(payload: dict) -> bool:
     """
     Send push notification via Firebase Cloud Messaging (FCM).
     Falls back to mock mode if FCM not configured.
+    Respects per-user rate limiting.
     
     Args:
         payload: Notification payload with title, body, device_tokens, data
@@ -30,9 +32,15 @@ async def send_push(payload: dict) -> bool:
         True if sent successfully, False otherwise
     """
     try:
+        user_id = payload.get("user_id", "unknown")
         platform = payload.get("platform", "android").lower()
         device_tokens = payload.get("device_tokens", [])
         notification_id = payload.get("notification_id", "unknown")
+        
+        # Check rate limit
+        if await is_rate_limited(user_id):
+            logger.warning(f"User {user_id} exceeded rate limit for notification {notification_id}")
+            return False
         
         if not device_tokens:
             logger.warning(f"No device tokens provided for notification {notification_id}")
