@@ -15,5 +15,5 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run FastAPI app via Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run FastAPI app via Uvicorn (fixed module path)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

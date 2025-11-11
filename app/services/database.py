@@ -66,6 +66,7 @@ async def init_db() -> None:
     await db_pool.connect()
     
     async with db_pool.pool.acquire() as conn:
+        # Create notifications table
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS notifications (
                 id SERIAL PRIMARY KEY,
@@ -81,13 +82,22 @@ async def init_db() -> None:
                 provider_response JSONB,
                 error_message TEXT,
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW(),
-                INDEX idx_user_id (user_id),
-                INDEX idx_status (status),
-                INDEX idx_created_at (created_at)
+                updated_at TIMESTAMP DEFAULT NOW()
             )
         """)
         
+        # Create indexes for notifications table
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_user_id ON notifications(user_id)
+        """)
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_status ON notifications(status)
+        """)
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_created_at ON notifications(created_at)
+        """)
+        
+        # Create notification_logs table
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS notification_logs (
                 id SERIAL PRIMARY KEY,
@@ -95,11 +105,16 @@ async def init_db() -> None:
                 user_id VARCHAR(255) NOT NULL,
                 event VARCHAR(50),
                 message TEXT,
-                created_at TIMESTAMP DEFAULT NOW(),
-                FOREIGN KEY (notification_id) REFERENCES notifications(notification_id),
-                INDEX idx_notification_id (notification_id),
-                INDEX idx_event (event)
+                created_at TIMESTAMP DEFAULT NOW()
             )
+        """)
+        
+        # Create indexes for notification_logs table
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_logs_notification_id ON notification_logs(notification_id)
+        """)
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_logs_event ON notification_logs(event)
         """)
         
         logger.info("✅ Database tables initialized")

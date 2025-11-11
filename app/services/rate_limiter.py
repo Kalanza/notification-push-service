@@ -5,7 +5,7 @@ Prevents notification spam per user.
 
 import logging
 from typing import Optional
-import aioredis
+from redis import asyncio as aioredis
 from app.config import settings
 
 logger = logging.getLogger(__name__)
