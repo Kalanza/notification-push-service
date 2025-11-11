@@ -5,13 +5,10 @@ health endpoints, database persistence, and FCM integration.
 """
 
 import pytest
-import json
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from app.models.schemas import PushNotificationSchema, NotificationStatus
 from app.services.idempotency import is_processed, mark_processed
-from app.services.retry import retry_message
 from app.services.circuit_breaker import CircuitBreaker
-from app.worker import on_message
 
 
 class TestMessageValidation:

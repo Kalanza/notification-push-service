@@ -2,7 +2,7 @@
 Rate limiting API endpoints with standardized response format.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from app.services.rate_limiter import get_user_quota, reset_user_quota, is_rate_limited
 from app.logging_config import get_logger
 from app.models.response import success_response, error_response

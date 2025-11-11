@@ -1,9 +1,8 @@
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional
-from firebase_admin import credentials, messaging
+from typing import Dict, List, Any
+from firebase_admin import messaging
 import firebase_admin
-from app.config import settings
 from app.services.rate_limiter import is_rate_limited
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,5 @@
-import asyncio
 import json
-import logging
 from aio_pika import IncomingMessage
-from app.services.rabbitmq import setup_rabbitmq
 from app.services.push_provider import send_push
 from app.services.idempotency import is_processed, mark_processed
 from app.services.retry import retry_message

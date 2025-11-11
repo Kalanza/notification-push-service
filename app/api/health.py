@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter
 import aio_pika
 from redis import asyncio as aioredis
 from app.config import settings

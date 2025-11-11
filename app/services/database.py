@@ -5,7 +5,6 @@ Handles connection pooling and notification status tracking.
 
 import asyncpg
 from typing import Optional, Dict, Any, List
-from datetime import datetime
 from app.config import settings
 import logging
 

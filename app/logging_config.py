@@ -3,7 +3,6 @@ Structured JSON logging configuration with correlation IDs.
 Logs include notification_id, idempotency_key, user_id for complete traceability.
 """
 
-import json
 import logging
 import sys
 from datetime import datetime
