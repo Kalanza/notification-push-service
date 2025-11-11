@@ -12,6 +12,7 @@ pydantic-settings
 pywebpush
 pytest
 pytest-asyncio
+pytest-cov
 flake8
 ruff
 asyncpg

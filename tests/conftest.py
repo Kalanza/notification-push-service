@@ -8,7 +8,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import json
 from aio_pika import IncomingMessage
 import asyncpg
-import aioredis
 
 
 @pytest.fixture(scope="session")
