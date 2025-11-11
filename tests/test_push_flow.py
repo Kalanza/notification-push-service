@@ -179,7 +179,6 @@ class TestRetryLogic:
     @pytest.mark.asyncio
     async def test_exponential_backoff_calculation(self):
         """Test exponential backoff delay (2^attempts)"""
-        from app.services.retry import _calculate_delay
         
         assert _calculate_delay(0) == 1   # 2^0 = 1
         assert _calculate_delay(1) == 2   # 2^1 = 2
