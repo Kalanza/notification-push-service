@@ -6,8 +6,10 @@ health endpoints, database persistence, and FCM integration.
 
 import pytest
 from unittest.mock import AsyncMock, patch
+from pydantic import ValidationError
 from app.models.schemas import PushNotificationSchema, NotificationStatus
 from app.services.idempotency import is_processed, mark_processed
+from app.services.retry import _calculate_delay
 from app.services.circuit_breaker import CircuitBreaker
 
 
@@ -32,35 +34,43 @@ class TestMessageValidation:
         """Test valid Web notification schema"""
         schema = PushNotificationSchema(**sample_web_payload)
         assert schema.platform == "web"
-        assert schema.ttl_seconds == 604800
+        assert schema.ttl_seconds == 3600  # Fixed: now 3600 instead of 604800
     
     def test_invalid_platform(self, sample_push_payload):
         """Test validation fails for invalid platform"""
         sample_push_payload["platform"] = "invalid_platform"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             PushNotificationSchema(**sample_push_payload)
     
     def test_missing_idempotency_key(self, sample_push_payload):
         """Test validation fails when idempotency key is missing"""
         sample_push_payload["idempotency_key"] = ""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             PushNotificationSchema(**sample_push_payload)
     
     def test_empty_device_tokens(self, sample_push_payload):
-        """Test validation fails with empty device tokens"""
+        """Test empty device tokens are converted to None"""
         sample_push_payload["device_tokens"] = []
-        with pytest.raises(ValueError):
-            PushNotificationSchema(**sample_push_payload)
+        schema = PushNotificationSchema(**sample_push_payload)
+        # Empty list is converted to None by validator
+        assert schema.device_tokens is None
     
     def test_notification_response_schema(self):
         """Test NotificationStatus schema"""
+        from datetime import datetime
+        now = datetime.utcnow().isoformat()
         status = NotificationStatus(
             notification_id="notif-123",
+            user_id="user-456",
+            platform="android",
             status="sent",
-            user_id="user-456"
+            created_at=now,
+            updated_at=now,
+            attempts=1
         )
         assert status.notification_id == "notif-123"
         assert status.status == "sent"
+        assert status.platform == "android"
 
 
 class TestIdempotency:

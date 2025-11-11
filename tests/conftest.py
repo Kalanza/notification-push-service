@@ -3,6 +3,7 @@ Pytest fixtures and configuration for push notification service tests.
 """
 
 import pytest
+import pytest_asyncio
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 import json
@@ -18,7 +19,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_rabbitmq_channel():
     """Mock RabbitMQ channel"""
     channel = AsyncMock()
@@ -27,7 +28,7 @@ async def mock_rabbitmq_channel():
     return channel
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_redis_client():
     """Mock Redis client"""
     client = AsyncMock()
@@ -35,10 +36,11 @@ async def mock_redis_client():
     client.setex = AsyncMock(return_value=True)
     client.delete = AsyncMock(return_value=1)
     client.incr = AsyncMock(return_value=1)
+    client.ping = AsyncMock(return_value=True)
     return client
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_postgres_pool():
     """Mock PostgreSQL connection pool"""
     pool = AsyncMock(spec=asyncpg.Pool)
@@ -99,12 +101,12 @@ def sample_web_payload():
         "body": "Browser notification",
         "device_tokens": ["web-subscription-endpoint"],
         "data": {},
-        "ttl_seconds": 604800,
+        "ttl_seconds": 3600,  # Fixed: was 604800 (exceeds max 86400)
         "attempts": 0
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_incoming_message(sample_push_payload):
     """Mock RabbitMQ incoming message"""
     message = AsyncMock(spec=IncomingMessage)
