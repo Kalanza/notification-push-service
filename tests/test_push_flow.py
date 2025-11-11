@@ -80,36 +80,40 @@ class TestIdempotency:
     async def test_first_message_not_processed(self, mock_redis_client):
         """Test first message is not marked as processed"""
         with patch('app.services.idempotency.redis_client', mock_redis_client):
-            mock_redis_client.get = AsyncMock(return_value=None)
+            mock_redis_client.exists = AsyncMock(return_value=0)  # 0 means key doesn't exist
             result = await is_processed("new-key-123")
-            assert result is False
+            assert result == 0  # exists() returns 0 for non-existent keys
     
     @pytest.mark.asyncio
     async def test_duplicate_message_detected(self, mock_redis_client):
         """Test duplicate message is detected"""
         with patch('app.services.idempotency.redis_client', mock_redis_client):
-            mock_redis_client.get = AsyncMock(return_value=b"processed")
+            mock_redis_client.exists = AsyncMock(return_value=1)  # 1 means key exists
             result = await is_processed("duplicate-key-123")
-            assert result is True
+            assert result == 1  # exists() returns 1 for existing keys
     
     @pytest.mark.asyncio
     async def test_mark_message_processed(self, mock_redis_client):
         """Test marking message as processed"""
         with patch('app.services.idempotency.redis_client', mock_redis_client):
-            mock_redis_client.setex = AsyncMock(return_value=True)
-            result = await mark_processed("new-key-123")
-            mock_redis_client.setex.assert_called_once()
-            assert result is True
+            mock_redis_client.set = AsyncMock(return_value=True)
+            await mark_processed("new-key-123")
+            mock_redis_client.set.assert_called_once()
+            # Verify it was called with correct parameters
+            call_args = mock_redis_client.set.call_args
+            assert "processed:new-key-123" in str(call_args)
     
     @pytest.mark.asyncio
     async def test_idempotency_ttl(self, mock_redis_client):
         """Test idempotency key has 24-hour TTL"""
         with patch('app.services.idempotency.redis_client', mock_redis_client):
-            mock_redis_client.setex = AsyncMock(return_value=True)
+            mock_redis_client.set = AsyncMock(return_value=True)
             await mark_processed("test-key")
-            # Verify setex was called with 24h TTL (86400 seconds)
-            call_args = mock_redis_client.setex.call_args
-            assert 86400 in call_args[0] or call_args[1].get('ex') == 86400
+            # Verify set was called with 24h TTL (86400 seconds) using ex parameter
+            mock_redis_client.set.assert_called_once()
+            call_args = mock_redis_client.set.call_args
+            # Check if ex=86400 was passed
+            assert call_args[1].get('ex') == 86400 or call_args.kwargs.get('ex') == 86400
 
 
 class TestCircuitBreaker:
@@ -288,9 +292,9 @@ class TestFCMIntegration:
     @pytest.mark.asyncio
     async def test_fcm_fallback_to_mock(self):
         """Test FCM falls back to mock when Firebase not initialized"""
-        with patch('app.services.push_provider._fcm_client', None):
-            # Would test _send_mock function is called as fallback
-            pass
+        # Placeholder test - FCM mock fallback logic exists in push_provider
+        # Would need to test with actual Firebase initialization failure
+        pass
     
     @pytest.mark.asyncio
     async def test_android_platform_specific_config(self):
