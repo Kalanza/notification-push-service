@@ -45,12 +45,19 @@ async def mock_postgres_pool():
     """Mock PostgreSQL connection pool"""
     pool = AsyncMock(spec=asyncpg.Pool)
     conn = AsyncMock()
-    pool.acquire = AsyncMock(return_value=conn)
-    conn.__aenter__ = AsyncMock(return_value=conn)
-    conn.__aexit__ = AsyncMock(return_value=None)
+    
+    # Setup async context manager for pool.acquire()
+    acquire_context = AsyncMock()
+    acquire_context.__aenter__ = AsyncMock(return_value=conn)
+    acquire_context.__aexit__ = AsyncMock(return_value=None)
+    pool.acquire = MagicMock(return_value=acquire_context)
+    
+    # Setup connection methods
     conn.execute = AsyncMock(return_value=None)
     conn.fetch = AsyncMock(return_value=[])
     conn.fetchrow = AsyncMock(return_value=None)
+    conn.fetchval = AsyncMock(return_value=1)
+    
     return pool
 
 

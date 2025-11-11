@@ -20,12 +20,14 @@ class DatabasePool:
     async def connect(self) -> None:
         """Initialize connection pool"""
         try:
+            # Disable SSL for testing environments
+            ssl_mode = None if 'test' in settings.database_url else 'prefer'
             self.pool = await asyncpg.create_pool(
                 settings.database_url,
                 min_size=5,
                 max_size=20,
                 command_timeout=60,
-                ssl='prefer'
+                ssl=ssl_mode
             )
             logger.info("✅ Connected to PostgreSQL")
         except Exception as e:
