@@ -9,6 +9,9 @@ from app.models.response import success_response, error_response
 router = APIRouter()
 logger = get_logger(__name__)
 
+# Global redis client for testing/mocking
+redis_client = None
+
 
 @router.get("/health")
 async def health_check():

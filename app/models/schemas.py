@@ -69,11 +69,11 @@ class PushNotificationSchema(BaseModel):
     @validator("device_tokens", always=True)
     def validate_tokens(cls, v, values):
         """Ensure we have either device_tokens or will resolve from user_id"""
-        # If device_tokens is empty, it will be resolved from user_id
-        if v and not isinstance(v, list):
+        # If device_tokens is empty list, convert to None
+        if v is not None and not isinstance(v, list):
             raise ValueError("device_tokens must be a list")
-        if v and len(v) == 0:
-            v = None
+        if v is not None and len(v) == 0:
+            return None
         return v
 
 
