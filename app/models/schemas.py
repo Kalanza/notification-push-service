@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator  # Changed from validator
 import uuid
 
 
@@ -29,7 +29,7 @@ class PushNotificationSchema(BaseModel):
     meta: Optional[Dict[str, Any]] = Field(default_factory=dict, description="Metadata for tracking")
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {  # Changed from schema_extra
             "example": {
                 "idempotency_key": "550e8400-e29b-41d4-a716-446655440000",
                 "notification_id": "550e8400-e29b-41d4-a716-446655440001",
@@ -51,7 +51,8 @@ class PushNotificationSchema(BaseModel):
             }
         }
     
-    @validator("platform")
+    @field_validator("platform")  # Changed from @validator
+    @classmethod
     def validate_platform(cls, v):
         """Validate platform is one of: android, ios, web"""
         allowed = {"android", "ios", "web"}
@@ -59,15 +60,17 @@ class PushNotificationSchema(BaseModel):
             raise ValueError(f"Platform must be one of {allowed}")
         return v.lower()
     
-    @validator("idempotency_key")
+    @field_validator("idempotency_key")  # Changed from @validator
+    @classmethod
     def validate_idempotency_key(cls, v):
         """Ensure idempotency_key is not empty"""
         if not v or not v.strip():
             raise ValueError("idempotency_key cannot be empty")
         return v.strip()
     
-    @validator("device_tokens", always=True)
-    def validate_tokens(cls, v, values):
+    @field_validator("device_tokens")  # Changed from @validator
+    @classmethod
+    def validate_tokens(cls, v):
         """Ensure we have either device_tokens or will resolve from user_id"""
         # If device_tokens is empty list, convert to None
         if v is not None and not isinstance(v, list):
@@ -85,7 +88,7 @@ class PushNotificationResponse(BaseModel):
     retry_after: Optional[int] = Field(default=None, description="Seconds to retry if failed")
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {  # Changed from schema_extra
             "example": {
                 "status": "queued",
                 "notification_id": "550e8400-e29b-41d4-a716-446655440001",

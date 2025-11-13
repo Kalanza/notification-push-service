@@ -47,7 +47,7 @@ class StandardResponse(BaseModel, Generic[T]):
     meta: PaginationMeta = PaginationMeta()
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {  # Changed from schema_extra
             "example": {
                 "success": True,
                 "data": {"id": "123", "status": "sent"},
